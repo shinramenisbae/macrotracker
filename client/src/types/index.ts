@@ -34,6 +34,8 @@ export interface Goals {
   goal_weight?: number;
 }
 
+export type GoalsUpdate = Partial<Goals>;
+
 export interface DailySummary {
   calories: number;
   protein_g: number;

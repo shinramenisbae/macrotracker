@@ -54,7 +54,7 @@ export async function getGoals(): Promise<{ goals: Goals }> {
   return request('/goals');
 }
 
-export async function updateGoals(goals: Goals): Promise<{ goals: Goals }> {
+export async function updateGoals(goals: Partial<Goals>): Promise<{ goals: Goals }> {
   return request('/goals', {
     method: 'PUT',
     body: JSON.stringify(goals),
