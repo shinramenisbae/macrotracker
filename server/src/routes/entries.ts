@@ -4,10 +4,14 @@ import { AppError } from '../middleware/errorHandler';
 
 const router = Router();
 
+function nzToday(): string {
+  return new Date().toLocaleDateString('en-CA', { timeZone: 'Pacific/Auckland' });
+}
+
 // GET /api/entries?date=YYYY-MM-DD
 router.get('/', (req: Request, res: Response, next: NextFunction) => {
   try {
-    const date = (req.query.date as string) || new Date().toISOString().split('T')[0];
+    const date = (req.query.date as string) || nzToday();
 
     const entries = db.prepare(
       'SELECT * FROM food_entries WHERE date = ? ORDER BY logged_at DESC'
@@ -28,7 +32,7 @@ router.post('/', (req: Request, res: Response, next: NextFunction) => {
       throw new AppError(400, 'MISSING_NAME', 'Food name is required');
     }
 
-    const entryDate = date || new Date().toISOString().split('T')[0];
+    const entryDate = date || nzToday();
 
     const result = db.prepare(`
       INSERT INTO food_entries (name, calories, protein_g, carbs_g, fat_g, serving_size, meal, source, barcode, image_path, date)

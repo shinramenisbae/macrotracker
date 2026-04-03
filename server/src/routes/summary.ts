@@ -3,10 +3,14 @@ import db from '../db';
 
 const router = Router();
 
+function nzToday(): string {
+  return new Date().toLocaleDateString('en-CA', { timeZone: 'Pacific/Auckland' });
+}
+
 // GET /api/summary?date=YYYY-MM-DD
 router.get('/', (req: Request, res: Response, next: NextFunction) => {
   try {
-    const date = (req.query.date as string) || new Date().toISOString().split('T')[0];
+    const date = (req.query.date as string) || nzToday();
 
     const totals = db.prepare(`
       SELECT

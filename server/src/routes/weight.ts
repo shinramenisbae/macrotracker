@@ -9,16 +9,21 @@ if (!fs.existsSync(UPLOADS_DIR)) fs.mkdirSync(UPLOADS_DIR, { recursive: true });
 
 const router = Router();
 
+function nzToday(): string {
+  return new Date().toLocaleDateString('en-CA', { timeZone: 'Pacific/Auckland' });
+}
+
 // GET /api/weight?days=30
 router.get('/', (req: Request, res: Response, next: NextFunction) => {
   try {
     const days = parseInt(req.query.days as string) || 30;
+    const today = nzToday();
 
     const entries = db.prepare(`
       SELECT * FROM weight_log
-      WHERE date >= date('now', ?)
+      WHERE date >= date(?, ?)
       ORDER BY date DESC
-    `).all(`-${days} days`);
+    `).all(today, `-${days} days`);
 
     res.json({ entries });
   } catch (err) {
@@ -35,7 +40,9 @@ router.post('/', (req: Request, res: Response, next: NextFunction) => {
       throw new AppError(400, 'INVALID_WEIGHT', 'weight_kg must be a positive number');
     }
 
-    const entryDate = date || new Date().toISOString().split('T')[0];
+    // Default to NZST date if none provided
+const nzDate = new Date().toLocaleDateString('en-CA', { timeZone: 'Pacific/Auckland' });
+const entryDate = date || nzDate;
 
     // Upsert: update if date exists, insert otherwise
     const existing = db.prepare('SELECT id FROM weight_log WHERE date = ?').get(entryDate) as any;

@@ -34,7 +34,7 @@ export default function WeightPage() {
   const handleLog = async (weight: number, notes?: string, photo?: string) => {
     setLogging(true);
     try {
-      await logWeight(weight, undefined, notes, photo);
+      await logWeight(weight, todayStr(), notes, photo);
       await load();
     } catch {
       // handle error
