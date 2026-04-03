@@ -1,0 +1,68 @@
+{
+  "project": "macrotracker",
+  "appType": "pwa",
+  "description": "Cal AI clone - macro and calorie tracker with AI food photo analysis, barcode scanning, daily nutritional dashboard. HTTPS required for camera access.",
+  "status": "in-progress",
+  "currentPhase": "repo",
+  "createdAt": "2026-04-03T03:53:51Z",
+  "updatedAt": "2026-04-03T04:02:08Z",
+  "discordChannel": "1469879767544103065",
+  "cronJobId": "9aa2dbf4-d8c6-4c24-9285-4ec4f8910b25",
+  "phases": {
+    "plan": {
+      "status": "done",
+      "startedAt": "2026-04-03T03:54:00Z",
+      "completedAt": "2026-04-03T03:56:03Z",
+      "workers": [],
+      "retries": 0
+    },
+    "approve": {
+      "status": "done",
+      "startedAt": null,
+      "completedAt": "2026-04-03T04:02:08Z",
+      "workers": [],
+      "retries": 0
+    },
+    "repo": {
+      "status": "in-progress",
+      "startedAt": "2026-04-03T04:02:08Z",
+      "completedAt": null,
+      "repoUrl": null
+    },
+    "implement": {
+      "status": "pending",
+      "startedAt": null,
+      "completedAt": null,
+      "workers": [],
+      "retries": 0,
+      "maxWorkers": 2
+    },
+    "test": {
+      "status": "pending",
+      "startedAt": null,
+      "completedAt": null,
+      "workers": [],
+      "retries": 0,
+      "maxRetries": 3
+    },
+    "build": {
+      "status": "pending",
+      "startedAt": null,
+      "completedAt": null,
+      "workers": [],
+      "retries": 0
+    },
+    "deploy": {
+      "status": "pending",
+      "startedAt": null,
+      "completedAt": null,
+      "workers": [],
+      "retries": 0,
+      "deployUrl": null
+    },
+    "done": {
+      "status": "pending",
+      "completedAt": null
+    }
+  }
+}
