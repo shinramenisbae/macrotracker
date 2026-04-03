@@ -22,7 +22,7 @@ app.use(express.json({ limit: '15mb' })); // Large enough for base64 images
 app.use(express.urlencoded({ extended: true }));
 
 // Serve uploaded files
-const uploadsDir = path.join(__dirname, '..', '..', 'uploads');
+const uploadsDir = process.env.UPLOADS_DIR || path.join(process.cwd(), 'uploads');
 app.use('/uploads', express.static(uploadsDir));
 
 // Routes
