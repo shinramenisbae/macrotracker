@@ -26,7 +26,9 @@ export default function WeightPage() {
     load();
     // Load goal weight from server
     getGoals().then((res) => {
-      if (res.goals?.goal_weight) setGoalWeight(res.goals.goal_weight);
+      if (res.goals?.goal_weight != null && res.goals.goal_weight > 0) {
+        setGoalWeight(res.goals.goal_weight);
+      }
     }).catch(() => {});
   }, [load]);
 
