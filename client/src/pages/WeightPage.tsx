@@ -28,10 +28,12 @@ export default function WeightPage() {
     if (saved) setGoalWeight(Number(saved));
   }, [load]);
 
-  const handleLog = async (weight: number, notes?: string) => {
+  const [viewingPhoto, setViewingPhoto] = useState<string | null>(null);
+
+  const handleLog = async (weight: number, notes?: string, photo?: string) => {
     setLogging(true);
     try {
-      await logWeight(weight, undefined, notes);
+      await logWeight(weight, undefined, notes, photo);
       await load();
     } catch {
       // handle error
@@ -174,21 +176,41 @@ export default function WeightPage() {
           entries.slice(0, 10).map((e) => (
             <div
               key={e.id}
-              className="flex items-center justify-between p-3 rounded-xl bg-dark-card border border-dark-border"
+              className="p-3 rounded-xl bg-dark-card border border-dark-border"
             >
-              <div>
-                <span className="font-semibold">{e.weight_kg} kg</span>
-                <span className="text-dark-muted text-sm ml-2">{e.date}</span>
-                {e.notes && (
-                  <span className="text-dark-muted text-xs ml-2">— {e.notes}</span>
-                )}
+              <div className="flex items-center justify-between">
+                <div>
+                  <span className="font-semibold">{e.weight_kg} kg</span>
+                  <span className="text-dark-muted text-sm ml-2">{e.date}</span>
+                  {e.notes && (
+                    <span className="text-dark-muted text-xs ml-2">— {e.notes}</span>
+                  )}
+                </div>
+                <div className="flex items-center gap-2">
+                  {e.photo_path && (
+                    <button
+                      onClick={() => setViewingPhoto(e.photo_path!)}
+                      className="text-accent text-sm p-2"
+                    >
+                      📸
+                    </button>
+                  )}
+                  <button
+                    onClick={() => handleDelete(e.id)}
+                    className="text-dark-muted text-sm active:text-red-400 p-2"
+                  >
+                    ✕
+                  </button>
+                </div>
               </div>
-              <button
-                onClick={() => handleDelete(e.id)}
-                className="text-dark-muted text-sm active:text-red-400 p-2"
-              >
-                ✕
-              </button>
+              {e.photo_path && viewingPhoto === e.photo_path && (
+                <img
+                  src={e.photo_path}
+                  alt="Progress"
+                  className="w-full aspect-[3/4] object-cover rounded-xl mt-3 cursor-pointer"
+                  onClick={() => setViewingPhoto(null)}
+                />
+              )}
             </div>
           ))
         )}

@@ -45,6 +45,7 @@ export interface WeightEntry {
   weight_kg: number;
   date: string;
   notes?: string;
+  photo_path?: string;
   created_at: string;
 }
 

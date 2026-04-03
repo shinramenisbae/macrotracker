@@ -71,10 +71,10 @@ export async function getWeightHistory(days = 30): Promise<{ entries: WeightEntr
   return request(`/weight?days=${days}`);
 }
 
-export async function logWeight(weight_kg: number, date?: string, notes?: string): Promise<{ entry: WeightEntry }> {
+export async function logWeight(weight_kg: number, date?: string, notes?: string, photo?: string): Promise<{ entry: WeightEntry }> {
   return request('/weight', {
     method: 'POST',
-    body: JSON.stringify({ weight_kg, date, notes }),
+    body: JSON.stringify({ weight_kg, date, notes, photo }),
   });
 }
 

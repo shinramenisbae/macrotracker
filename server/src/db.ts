@@ -54,6 +54,7 @@ export function initializeDatabase(): void {
       weight_kg   REAL NOT NULL,
       date        TEXT NOT NULL UNIQUE DEFAULT (date('now')),
       notes       TEXT,
+      photo_path  TEXT,
       created_at  TEXT NOT NULL DEFAULT (datetime('now'))
     );
 
@@ -71,6 +72,13 @@ export function initializeDatabase(): void {
       cached_at   TEXT NOT NULL DEFAULT (datetime('now'))
     );
   `);
+
+  // Migration: add photo_path to weight_log if missing
+  const cols = db.pragma('table_info(weight_log)') as any[];
+  if (!cols.find((c: any) => c.name === 'photo_path')) {
+    db.exec('ALTER TABLE weight_log ADD COLUMN photo_path TEXT');
+    console.log('Migrated: added photo_path to weight_log');
+  }
 
   console.log('Database initialized successfully');
 }
