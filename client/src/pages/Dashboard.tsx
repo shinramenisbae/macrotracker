@@ -7,6 +7,7 @@ import { useGoals } from '../hooks/useGoals';
 import { getEntries, getSummary } from '../lib/api';
 import { todayStr, addDays, friendlyDate } from '../lib/utils';
 import type { FoodEntry, DailySummary } from '../types';
+import DailyQuote from '../components/DailyQuote';
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -60,6 +61,9 @@ export default function Dashboard() {
           </button>
         </div>
       </div>
+
+      {/* Daily motivation */}
+      {date === todayStr() && <DailyQuote />}
 
       {/* Calorie ring */}
       <CalorieRing current={summary.calories} goal={goals.calories} />
