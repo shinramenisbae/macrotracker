@@ -16,7 +16,7 @@ export default function CalorieRing({ current, goal }: Props) {
   return (
     <div className="flex flex-col items-center py-4">
       <div className="relative w-44 h-44">
-        <svg className="w-full h-full -rotate-90" viewBox="0 0 160 160">
+        <svg className="w-full h-full -rotate-90" viewBox="0 0 160 160" role="img" aria-label={`${Math.round(current)} of ${goal} calories consumed`}>
           {/* Background ring */}
           <circle
             cx="80"

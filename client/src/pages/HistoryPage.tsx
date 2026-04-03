@@ -184,7 +184,7 @@ export default function HistoryPage() {
       {!loading && !error && (
         <div className="space-y-2">
           {days.map((day) => {
-            const withinGoal = day.summary.calories <= goals.calories;
+            const withinGoal = goals.calories > 0 && day.summary.calories <= goals.calories;
             const hasCals = day.summary.calories > 0;
             const weight = weightMap[day.date];
             const hasPhoto = !!weight?.photo_path;

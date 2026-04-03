@@ -175,10 +175,12 @@ export default function ScanPage() {
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-1 bg-dark-card rounded-xl p-1 mb-4">
+      <div className="flex gap-1 bg-dark-card rounded-xl p-1 mb-4" role="tablist">
         {(['photo', 'barcode'] as Tab[]).map((t) => (
           <button
             key={t}
+            role="tab"
+            aria-selected={tab === t}
             onClick={() => {
               setTab(t);
               setResults([]);

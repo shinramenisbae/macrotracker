@@ -26,15 +26,15 @@
 
 @layer components {
   .btn-primary {
-    @apply bg-accent text-white font-semibold rounded-xl px-6 py-3 active:scale-95 transition-all duration-150 disabled:opacity-50 disabled:active:scale-100;
+    @apply bg-accent text-white font-semibold rounded-xl px-6 py-3 active:scale-95 transition-all duration-150 disabled:opacity-50 disabled:active:scale-100 focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-dark-bg;
   }
 
   .btn-secondary {
-    @apply bg-dark-card text-dark-text border border-dark-border font-semibold rounded-xl px-6 py-3 active:scale-95 transition-all duration-150;
+    @apply bg-dark-card text-dark-text border border-dark-border font-semibold rounded-xl px-6 py-3 active:scale-95 transition-all duration-150 focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-dark-bg;
   }
 
   .btn-danger {
-    @apply bg-red-600 text-white font-semibold rounded-xl px-6 py-3 active:scale-95 transition-all duration-150;
+    @apply bg-red-600 text-white font-semibold rounded-xl px-6 py-3 active:scale-95 transition-all duration-150 focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2 focus-visible:ring-offset-dark-bg;
   }
 
   .card {
@@ -46,7 +46,7 @@
   }
 
   .page-container {
-    @apply px-4 pb-24 pt-4 max-w-lg mx-auto min-h-screen;
+    @apply px-4 pb-24 pt-4 max-w-2xl mx-auto min-h-screen;
   }
 }
 
@@ -58,4 +58,13 @@
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(8px); }
   to { opacity: 1; transform: translateY(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fade-in {
+    animation: none;
+  }
+  .btn-primary, .btn-secondary, .btn-danger {
+    transition: none;
+  }
 }

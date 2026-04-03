@@ -33,19 +33,21 @@ const quotes = [
 ];
 
 function getDayOfYear(): number {
-  const now = new Date();
-  const start = new Date(now.getFullYear(), 0, 0);
-  const diff = now.getTime() - start.getTime();
-  return Math.floor(diff / (1000 * 60 * 60 * 24));
+  // Use NZST date string to get correct day
+  const nzDate = new Date().toLocaleDateString('en-CA', { timeZone: 'Pacific/Auckland' });
+  const [y, m, d] = nzDate.split('-').map(Number);
+  const start = new Date(y, 0, 0);
+  const current = new Date(y, m - 1, d);
+  return Math.floor((current.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
 }
 
 export default function DailyQuote() {
   const quote = quotes[getDayOfYear() % quotes.length];
 
   return (
-    <div className="px-4 py-3 rounded-xl bg-dark-card/50 border border-dark-border/50 mb-4">
+    <blockquote className="px-4 py-3 rounded-xl bg-dark-card/50 border border-dark-border/50 mb-4">
       <p className="text-sm text-gray-300 italic leading-relaxed">"{quote.text}"</p>
-      <p className="text-xs text-dark-muted mt-1 text-right">— {quote.author}</p>
-    </div>
+      <cite className="block text-xs text-dark-muted mt-1 text-right not-italic">— {quote.author}</cite>
+    </blockquote>
   );
 }

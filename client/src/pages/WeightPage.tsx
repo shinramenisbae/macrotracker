@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts';
 import WeightForm from '../components/WeightForm';
 import { getWeightHistory, logWeight, deleteWeight, getGoals, updateGoals } from '../lib/api';
@@ -7,7 +7,7 @@ import type { WeightEntry } from '../types';
 
 export default function WeightPage() {
   const [entries, setEntries] = useState<WeightEntry[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [logging, setLogging] = useState(false);
   const [goalWeight, setGoalWeight] = useState<number | null>(null);
   const [editingGoal, setEditingGoal] = useState(false);
@@ -21,6 +21,8 @@ export default function WeightPage() {
       setError(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load weight history');
+    } finally {
+      setLoading(false);
     }
   }, []);
 
@@ -50,11 +52,12 @@ export default function WeightPage() {
   };
 
   const handleDelete = async (id: number) => {
+    if (!confirm('Delete this weight entry?')) return;
     try {
       await deleteWeight(id);
       await load();
-    } catch {
-      // handle error
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to delete');
     }
   };
 
@@ -71,12 +74,13 @@ export default function WeightPage() {
     setEditingGoal(false);
   };
 
-  const chartData = [...entries]
-    .reverse()
-    .map((e) => ({
-      date: e.date.slice(5), // MM-DD
+  const chartData = useMemo(() =>
+    [...entries].reverse().map((e) => ({
+      date: e.date.slice(5),
       weight: e.weight_kg,
-    }));
+    })),
+    [entries]
+  );
 
   const latest = entries[0];
 
@@ -127,6 +131,7 @@ export default function WeightPage() {
       {chartData.length >= 1 && (
         <div className="card mb-4">
           <h3 className="text-sm font-semibold text-dark-muted mb-3">Trend (90 days)</h3>
+          <div role="img" aria-label="Weight trend chart">
           <ResponsiveContainer width="100%" height={200}>
             <LineChart data={chartData}>
               <XAxis
@@ -170,6 +175,7 @@ export default function WeightPage() {
               )}
             </LineChart>
           </ResponsiveContainer>
+          </div>
         </div>
       )}
 

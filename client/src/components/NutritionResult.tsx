@@ -23,12 +23,13 @@ export default function NutritionResult({ items, onLog, onEdit, logging, loggedI
         Results
       </h3>
       {items.map((item, i) => {
+        const key = `${item.name}-${item.calories}-${i}`;
         const isLogged = loggedIndices?.has(i) ?? false;
         const isLogging = logging === i;
 
         return (
           <div
-            key={i}
+            key={key}
             className={`card space-y-3 transition-opacity ${isLogged ? 'opacity-50' : ''}`}
           >
             <div className="flex items-start justify-between">

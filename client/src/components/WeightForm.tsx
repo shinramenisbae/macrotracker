@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useId } from 'react';
 import { resizeImage } from '../lib/utils';
 
 interface Props {
@@ -12,6 +12,7 @@ export default function WeightForm({ onSubmit, loading }: Props) {
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [photoBase64, setPhotoBase64] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
+  const prefix = useId();
 
   const handlePhoto = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -38,9 +39,12 @@ export default function WeightForm({ onSubmit, loading }: Props) {
       <h3 className="font-semibold">Log Weight</h3>
       <div className="flex gap-3">
         <div className="flex-1">
+          <label htmlFor={`${prefix}-wt`} className="sr-only">Weight (kg)</label>
           <input
+            id={`${prefix}-wt`}
             type="number"
             step="0.1"
+            min="0"
             value={weight}
             onChange={(e) => setWeight(e.target.value)}
             className="input-field"
@@ -53,7 +57,9 @@ export default function WeightForm({ onSubmit, loading }: Props) {
           {loading ? '...' : 'Log'}
         </button>
       </div>
+      <label htmlFor={`${prefix}-notes`} className="sr-only">Notes</label>
       <input
+        id={`${prefix}-notes`}
         type="text"
         value={notes}
         onChange={(e) => setNotes(e.target.value)}

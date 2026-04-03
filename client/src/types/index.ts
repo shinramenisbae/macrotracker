@@ -34,7 +34,11 @@ export interface Goals {
   goal_weight?: number;
 }
 
+// GoalsUpdate used by api.ts
 export type GoalsUpdate = Partial<Goals>;
+
+export type MealType = 'breakfast' | 'lunch' | 'dinner' | 'snack' | 'other';
+export type FoodSource = 'ai_photo' | 'barcode' | 'manual';
 
 export interface DailySummary {
   calories: number;

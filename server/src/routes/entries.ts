@@ -23,6 +23,17 @@ router.get('/', (req: Request, res: Response, next: NextFunction) => {
   }
 });
 
+// GET /api/entries/:id
+router.get('/:id', (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const entry = db.prepare('SELECT * FROM food_entries WHERE id = ?').get(Number(req.params.id));
+    if (!entry) throw new AppError(404, 'ENTRY_NOT_FOUND', `Entry ${req.params.id} not found`);
+    res.json({ entry });
+  } catch (err) {
+    next(err);
+  }
+});
+
 // POST /api/entries
 router.post('/', (req: Request, res: Response, next: NextFunction) => {
   try {

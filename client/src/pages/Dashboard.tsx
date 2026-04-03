@@ -12,7 +12,7 @@ import DailyQuote from '../components/DailyQuote';
 export default function Dashboard() {
   const navigate = useNavigate();
   const { goals } = useGoals();
-  const [date, setDate] = useState(todayStr());
+  const [date, setDate] = useState(() => todayStr());
   const [entries, setEntries] = useState<FoodEntry[]>([]);
   const [summary, setSummary] = useState<DailySummary>({ calories: 0, protein_g: 0, carbs_g: 0, fat_g: 0 });
   const [loading, setLoading] = useState(true);
@@ -77,25 +77,28 @@ export default function Dashboard() {
       </div>
 
       {/* Quick add buttons */}
-      <div className="flex gap-3 mb-4">
-        <button
-          onClick={() => navigate('/scan')}
-          className="btn-primary flex-1 flex items-center justify-center gap-2 h-12"
-        >
-          <span>📷</span> Scan Food
-        </button>
-        <button
-          onClick={() => navigate('/scan?manual=1')}
-          className="btn-secondary flex-1 flex items-center justify-center gap-2 h-12"
-        >
-          <span>＋</span> Add Manual
-        </button>
-      </div>
+      {/* Only show add buttons for today */}
+      {date === todayStr() && (
+        <div className="flex gap-3 mb-4">
+          <button
+            onClick={() => navigate('/scan')}
+            className="btn-primary flex-1 flex items-center justify-center gap-2 h-12"
+          >
+            <span aria-hidden="true">📷</span> Scan Food
+          </button>
+          <button
+            onClick={() => navigate('/scan?manual=1')}
+            className="btn-secondary flex-1 flex items-center justify-center gap-2 h-12"
+          >
+            <span aria-hidden="true">＋</span> Add Manual
+          </button>
+        </div>
+      )}
 
       {/* Food log */}
       <div className="space-y-2">
         <h2 className="text-sm font-semibold text-dark-muted uppercase tracking-wider">
-          Today's Log
+          {date === todayStr() ? "Today's Log" : `${friendlyDate(date)}'s Log`}
         </h2>
         {loading ? (
           <div className="text-center py-8 text-dark-muted">Loading...</div>

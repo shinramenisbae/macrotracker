@@ -13,7 +13,7 @@ export default function Layout() {
   return (
     <div className="min-h-screen bg-dark-bg flex flex-col">
       <main className="flex-1 overflow-y-auto">
-        <div key={location.pathname} className="fade-in">
+        <div className="fade-in">
           <Outlet />
         </div>
       </main>
@@ -30,7 +30,7 @@ export default function Layout() {
                 }`
               }
             >
-              <span className="text-xl leading-none">{item.icon}</span>
+              <span className="text-xl leading-none" aria-hidden="true">{item.icon}</span>
               <span className="text-[10px] mt-1 font-medium">{item.label}</span>
             </NavLink>
           ))}

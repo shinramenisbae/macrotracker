@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useId } from 'react';
 import type { FoodItem } from '../types';
 
 interface Props {
@@ -10,13 +10,14 @@ interface Props {
 }
 
 export default function FoodForm({ initial, onSubmit, onCancel, submitLabel = 'Save', loading }: Props) {
-  const [name, setName] = useState(initial?.name || '');
-  const [calories, setCalories] = useState(String(initial?.calories || ''));
-  const [protein, setProtein] = useState(String(initial?.protein_g || ''));
-  const [carbs, setCarbs] = useState(String(initial?.carbs_g || ''));
-  const [fat, setFat] = useState(String(initial?.fat_g || ''));
-  const [serving, setServing] = useState(initial?.serving_size || '');
-  const [meal, setMeal] = useState('other');
+  const prefix = useId();
+  const [name, setName] = useState(initial?.name ?? '');
+  const [calories, setCalories] = useState(String(initial?.calories ?? ''));
+  const [protein, setProtein] = useState(String(initial?.protein_g ?? ''));
+  const [carbs, setCarbs] = useState(String(initial?.carbs_g ?? ''));
+  const [fat, setFat] = useState(String(initial?.fat_g ?? ''));
+  const [serving, setServing] = useState(initial?.serving_size ?? '');
+  const [meal, setMeal] = useState((initial as any)?.meal ?? 'other');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -34,8 +35,9 @@ export default function FoodForm({ initial, onSubmit, onCancel, submitLabel = 'S
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div>
-        <label className="block text-sm text-dark-muted mb-1">Food Name</label>
+        <label htmlFor={`${prefix}-name`} className="block text-sm text-dark-muted mb-1">Food Name</label>
         <input
+          id={`${prefix}-name`}
           type="text"
           value={name}
           onChange={(e) => setName(e.target.value)}
@@ -47,9 +49,11 @@ export default function FoodForm({ initial, onSubmit, onCancel, submitLabel = 'S
 
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <label className="block text-sm text-dark-muted mb-1">Calories</label>
+          <label htmlFor={`${prefix}-cal`} className="block text-sm text-dark-muted mb-1">Calories</label>
           <input
+            id={`${prefix}-cal`}
             type="number"
+            min="0"
             value={calories}
             onChange={(e) => setCalories(e.target.value)}
             className="input-field"
@@ -58,9 +62,11 @@ export default function FoodForm({ initial, onSubmit, onCancel, submitLabel = 'S
           />
         </div>
         <div>
-          <label className="block text-sm text-dark-muted mb-1">Protein (g)</label>
+          <label htmlFor={`${prefix}-pro`} className="block text-sm text-dark-muted mb-1">Protein (g)</label>
           <input
+            id={`${prefix}-pro`}
             type="number"
+            min="0"
             value={protein}
             onChange={(e) => setProtein(e.target.value)}
             className="input-field"
@@ -69,9 +75,11 @@ export default function FoodForm({ initial, onSubmit, onCancel, submitLabel = 'S
           />
         </div>
         <div>
-          <label className="block text-sm text-dark-muted mb-1">Carbs (g)</label>
+          <label htmlFor={`${prefix}-carb`} className="block text-sm text-dark-muted mb-1">Carbs (g)</label>
           <input
+            id={`${prefix}-carb`}
             type="number"
+            min="0"
             value={carbs}
             onChange={(e) => setCarbs(e.target.value)}
             className="input-field"
@@ -80,9 +88,11 @@ export default function FoodForm({ initial, onSubmit, onCancel, submitLabel = 'S
           />
         </div>
         <div>
-          <label className="block text-sm text-dark-muted mb-1">Fat (g)</label>
+          <label htmlFor={`${prefix}-fat`} className="block text-sm text-dark-muted mb-1">Fat (g)</label>
           <input
+            id={`${prefix}-fat`}
             type="number"
+            min="0"
             value={fat}
             onChange={(e) => setFat(e.target.value)}
             className="input-field"
@@ -93,8 +103,9 @@ export default function FoodForm({ initial, onSubmit, onCancel, submitLabel = 'S
       </div>
 
       <div>
-        <label className="block text-sm text-dark-muted mb-1">Serving Size</label>
+        <label htmlFor={`${prefix}-srv`} className="block text-sm text-dark-muted mb-1">Serving Size</label>
         <input
+          id={`${prefix}-srv`}
           type="text"
           value={serving}
           onChange={(e) => setServing(e.target.value)}
@@ -104,8 +115,9 @@ export default function FoodForm({ initial, onSubmit, onCancel, submitLabel = 'S
       </div>
 
       <div>
-        <label className="block text-sm text-dark-muted mb-1">Meal</label>
+        <label htmlFor={`${prefix}-meal`} className="block text-sm text-dark-muted mb-1">Meal</label>
         <select
+          id={`${prefix}-meal`}
           value={meal}
           onChange={(e) => setMeal(e.target.value)}
           className="input-field"

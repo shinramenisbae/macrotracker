@@ -3,8 +3,10 @@ import type { FoodEntry, FoodItem, Goals, DailySummary, WeightEntry, AnalyzeResp
 const BASE = '/api';
 
 async function request<T>(url: string, options?: RequestInit): Promise<T> {
+  const headers: Record<string, string> = {};
+  if (options?.body) headers['Content-Type'] = 'application/json';
   const res = await fetch(`${BASE}${url}`, {
-    headers: { 'Content-Type': 'application/json' },
+    headers,
     ...options,
   });
   if (!res.ok) {
@@ -23,12 +25,16 @@ export async function analyzePhoto(imageBase64: string): Promise<AnalyzeResponse
 }
 
 export async function lookupBarcode(code: string): Promise<{ product: FoodItem }> {
-  return request(`/barcode/${code}`);
+  return request(`/barcode/${encodeURIComponent(code)}`);
 }
 
 // Entries
 export async function getEntries(date: string): Promise<{ entries: FoodEntry[] }> {
-  return request(`/entries?date=${date}`);
+  return request(`/entries?date=${encodeURIComponent(date)}`);
+}
+
+export async function getEntry(id: number): Promise<{ entry: FoodEntry }> {
+  return request(`/entries/${id}`);
 }
 
 export async function createEntry(entry: Partial<FoodEntry>): Promise<{ entry: FoodEntry }> {
