@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts';
 import WeightForm from '../components/WeightForm';
 import { getWeightHistory, logWeight, deleteWeight, getGoals, updateGoals } from '../lib/api';
+import { todayStr } from '../lib/utils';
 import type { WeightEntry } from '../types';
 
 export default function WeightPage() {
