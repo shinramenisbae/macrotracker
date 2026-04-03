@@ -46,7 +46,7 @@ export default function Dashboard() {
       <div className="flex items-center justify-between mb-4">
         <h1 className="text-xl font-bold">MacroTracker</h1>
         <div className="flex items-center gap-2">
-          <button onClick={prevDay} className="w-9 h-9 rounded-full bg-dark-card flex items-center justify-center active:bg-dark-border">
+          <button onClick={prevDay} aria-label="Previous day" className="w-9 h-9 rounded-full bg-dark-card flex items-center justify-center active:bg-dark-border">
             ‹
           </button>
           <span className="text-sm font-medium min-w-[90px] text-center">
@@ -55,6 +55,7 @@ export default function Dashboard() {
           <button
             onClick={nextDay}
             disabled={date === todayStr()}
+            aria-label="Next day"
             className="w-9 h-9 rounded-full bg-dark-card flex items-center justify-center active:bg-dark-border disabled:opacity-30"
           >
             ›

@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { getEntries, getSummary, getWeightHistory } from '../lib/api';
+import { getHistory, getWeightHistory } from '../lib/api';
 import { todayStr, addDays, friendlyDate } from '../lib/utils';
 import { useGoals } from '../hooks/useGoals';
 import FoodEntryCard from '../components/FoodEntryCard';
@@ -16,49 +16,43 @@ export default function HistoryPage() {
   const [days, setDays] = useState<DayData[]>([]);
   const [weightMap, setWeightMap] = useState<Record<string, WeightEntry>>({});
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
 
   const loadDays = useCallback(async () => {
     setLoading(true);
+    setError(null);
     const today = todayStr();
-    const dayList: DayData[] = [];
 
-    // Load last 14 days
-    for (let i = 0; i < 14; i++) {
-      const date = addDays(today, -i);
-      try {
-        const [entryRes, summaryRes] = await Promise.all([
-          getEntries(date),
-          getSummary(date),
-        ]);
-        dayList.push({
-          date,
-          summary: summaryRes.totals,
-          entries: entryRes.entries,
-        });
-      } catch {
-        dayList.push({
-          date,
-          summary: { calories: 0, protein_g: 0, carbs_g: 0, fat_g: 0 },
-          entries: [],
-        });
-      }
-    }
-
-    // Load weight data
     try {
-      const weightRes = await getWeightHistory(14);
-      const map: Record<string, WeightEntry> = {};
-      for (const w of weightRes.entries) {
-        map[w.date] = w;
-      }
-      setWeightMap(map);
-    } catch {
-      // no weight data
-    }
+      // Single batch call instead of 28 individual calls
+      const [historyRes, weightRes] = await Promise.all([
+        getHistory(14, today),
+        getWeightHistory(14).catch(() => ({ entries: [] as WeightEntry[] })),
+      ]);
 
-    setDays(dayList);
-    setLoading(false);
+      // Build day list
+      const dayList: DayData[] = [];
+      for (let i = 0; i < 14; i++) {
+        const date = addDays(today, -i);
+        dayList.push({
+          date,
+          summary: historyRes.summaryMap[date] || { calories: 0, protein_g: 0, carbs_g: 0, fat_g: 0 },
+          entries: historyRes.entryMap[date] || [],
+        });
+      }
+
+      // Weight map
+      const wMap: Record<string, WeightEntry> = {};
+      for (const w of weightRes.entries) wMap[w.date] = w;
+
+      setDays(dayList);
+      setWeightMap(wMap);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load history');
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
   useEffect(() => {
@@ -76,6 +70,7 @@ export default function HistoryPage() {
         <div className="flex items-center gap-3 mb-4">
           <button
             onClick={() => setSelectedDate(null)}
+            aria-label="Back to history"
             className="w-9 h-9 rounded-full bg-dark-card flex items-center justify-center active:bg-dark-border text-lg"
           >
             ‹
@@ -141,7 +136,7 @@ export default function HistoryPage() {
             {weight.photo_path && (
               <img
                 src={weight.photo_path}
-                alt="Progress photo"
+                alt={`Progress photo for ${selectedDate}`}
                 className="w-full aspect-[3/4] object-cover rounded-xl mt-3"
               />
             )}
@@ -172,9 +167,21 @@ export default function HistoryPage() {
     <div className="page-container">
       <h1 className="text-xl font-bold mb-4">History</h1>
 
-      {loading ? (
-        <div className="text-center py-8 text-dark-muted">Loading...</div>
-      ) : (
+      {loading && (
+        <div className="flex flex-col items-center py-8">
+          <div className="w-10 h-10 border-4 border-accent border-t-transparent rounded-full animate-spin" />
+          <p className="text-sm text-dark-muted mt-3">Loading...</p>
+        </div>
+      )}
+
+      {error && (
+        <div className="card border-red-500/30 mb-4">
+          <p className="text-sm text-red-400">{error}</p>
+          <button onClick={loadDays} className="text-accent text-sm mt-2">Retry</button>
+        </div>
+      )}
+
+      {!loading && !error && (
         <div className="space-y-2">
           {days.map((day) => {
             const withinGoal = day.summary.calories <= goals.calories;
@@ -189,7 +196,7 @@ export default function HistoryPage() {
                 className="w-full flex items-center justify-between p-3 rounded-xl bg-dark-card border border-dark-border active:bg-dark-border transition-colors"
               >
                 <div className="flex items-center gap-3">
-                  <span className="text-lg">
+                  <span className="text-lg" role="img" aria-label={!hasCals ? 'No data' : withinGoal ? 'Within goal' : 'Over goal'}>
                     {!hasCals ? '⚪' : withinGoal ? '✅' : '⚠️'}
                   </span>
                   <div className="text-left">
@@ -208,7 +215,7 @@ export default function HistoryPage() {
                       {hasPhoto ? ' 📸' : ''}
                     </p>
                   </div>
-                  <span className="text-dark-muted text-sm">›</span>
+                  <span className="text-dark-muted text-sm" aria-hidden="true">›</span>
                 </div>
               </button>
             );

@@ -81,3 +81,16 @@ export async function logWeight(weight_kg: number, date?: string, notes?: string
 export async function deleteWeight(id: number): Promise<{ success: boolean }> {
   return request(`/weight/${id}`, { method: 'DELETE' });
 }
+
+// History (batch)
+export interface HistoryResponse {
+  summaryMap: Record<string, DailySummary & { date: string; entry_count: number }>;
+  entryMap: Record<string, FoodEntry[]>;
+  today: string;
+}
+
+export async function getHistory(days = 14, today?: string): Promise<HistoryResponse> {
+  const params = new URLSearchParams({ days: String(days) });
+  if (today) params.set('today', today);
+  return request(`/summary/history?${params}`);
+}

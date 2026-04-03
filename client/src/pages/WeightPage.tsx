@@ -12,13 +12,15 @@ export default function WeightPage() {
   const [goalWeight, setGoalWeight] = useState<number | null>(null);
   const [editingGoal, setEditingGoal] = useState(false);
   const [goalInput, setGoalInput] = useState('');
+  const [error, setError] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     try {
       const res = await getWeightHistory(90);
       setEntries(res.entries);
-    } catch {
-      // API may not be running
+      setError(null);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load weight history');
     }
   }, []);
 
@@ -36,11 +38,12 @@ export default function WeightPage() {
 
   const handleLog = async (weight: number, notes?: string, photo?: string) => {
     setLogging(true);
+    setError(null);
     try {
       await logWeight(weight, todayStr(), notes, photo);
       await load();
-    } catch {
-      // handle error
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to log weight');
     } finally {
       setLogging(false);
     }
@@ -170,6 +173,13 @@ export default function WeightPage() {
         </div>
       )}
 
+      {/* Error */}
+      {error && (
+        <div className="card border-red-500/30 mb-4">
+          <p className="text-sm text-red-400">{error}</p>
+        </div>
+      )}
+
       {/* Log form */}
       <WeightForm onSubmit={handleLog} loading={logging} />
 
@@ -197,7 +207,8 @@ export default function WeightPage() {
                 <div className="flex items-center gap-2">
                   {e.photo_path && (
                     <button
-                      onClick={() => setViewingPhoto(e.photo_path!)}
+                      onClick={() => setViewingPhoto(viewingPhoto === e.photo_path ? null : e.photo_path!)}
+                      aria-label="View progress photo"
                       className="text-accent text-sm p-2"
                     >
                       📸
@@ -205,6 +216,7 @@ export default function WeightPage() {
                   )}
                   <button
                     onClick={() => handleDelete(e.id)}
+                    aria-label={`Delete weight entry for ${e.date}`}
                     className="text-dark-muted text-sm active:text-red-400 p-2"
                   >
                     ✕
@@ -214,7 +226,7 @@ export default function WeightPage() {
               {e.photo_path && viewingPhoto === e.photo_path && (
                 <img
                   src={e.photo_path}
-                  alt="Progress"
+                  alt={`Progress photo for ${e.date}`}
                   className="w-full aspect-[3/4] object-cover rounded-xl mt-3 cursor-pointer"
                   onClick={() => setViewingPhoto(null)}
                 />

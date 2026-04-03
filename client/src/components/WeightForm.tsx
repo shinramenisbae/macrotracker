@@ -67,7 +67,7 @@ export default function WeightForm({ onSubmit, loading }: Props) {
           <div className="relative">
             <img
               src={photoPreview}
-              alt="Progress"
+              alt="Progress photo preview"
               className="w-full aspect-[3/4] object-cover rounded-xl"
             />
             <button
@@ -76,6 +76,7 @@ export default function WeightForm({ onSubmit, loading }: Props) {
                 setPhotoPreview(null);
                 setPhotoBase64(null);
               }}
+              aria-label="Remove photo"
               className="absolute top-2 right-2 w-8 h-8 rounded-full bg-black/60 flex items-center justify-center text-white text-sm"
             >
               ✕
