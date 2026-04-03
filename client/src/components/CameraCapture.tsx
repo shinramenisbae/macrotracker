@@ -7,8 +7,7 @@ interface Props {
 }
 
 export default function CameraCapture({ onCapture, disabled }: Props) {
-  const cameraRef = useRef<HTMLInputElement>(null);
-  const galleryRef = useRef<HTMLInputElement>(null);
+  const fileRef = useRef<HTMLInputElement>(null);
 
   const handleFile = useCallback(
     async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -24,35 +23,17 @@ export default function CameraCapture({ onCapture, disabled }: Props) {
   return (
     <div className="flex flex-col gap-3">
       <button
-        onClick={() => cameraRef.current?.click()}
+        onClick={() => fileRef.current?.click()}
         disabled={disabled}
         className="btn-primary flex items-center justify-center gap-2 h-14"
       >
-        <span className="text-xl">📷</span>
-        <span>Take Photo</span>
+        <span className="text-xl">📸</span>
+        <span>Add Food Photo</span>
       </button>
-      <button
-        onClick={() => galleryRef.current?.click()}
-        disabled={disabled}
-        className="btn-secondary flex items-center justify-center gap-2 h-14"
-      >
-        <span className="text-xl">🖼️</span>
-        <span>Choose from Gallery</span>
-      </button>
-      {/* Native camera capture */}
       <input
-        ref={cameraRef}
+        ref={fileRef}
         type="file"
         accept="image/*"
-        capture="environment"
-        onChange={handleFile}
-        className="hidden"
-      />
-      {/* Gallery picker - specific extensions bypass camera prompt on most devices */}
-      <input
-        ref={galleryRef}
-        type="file"
-        accept=".jpg,.jpeg,.png,.heic,.heif,.webp"
         onChange={handleFile}
         className="hidden"
       />
