@@ -1,7 +1,7 @@
 import { AppError } from '../middleware/errorHandler';
 
-const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
-const VISION_MODEL = 'claude-sonnet-4-20250514';
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+const VISION_MODEL = 'gemini-2.0-flash';
 
 const ANALYSIS_PROMPT = `Analyze this food photo. Estimate the nutritional content for the visible portion/serving.
 Return ONLY valid JSON (no markdown, no code fences):
@@ -36,70 +36,68 @@ export interface AnalysisResult {
 }
 
 export async function analyzeFood(imageBase64: string): Promise<AnalysisResult> {
-  if (!ANTHROPIC_API_KEY) {
-    throw new AppError(500, 'CONFIG_ERROR', 'Anthropic API key not configured');
+  if (!GEMINI_API_KEY) {
+    throw new AppError(500, 'CONFIG_ERROR', 'Gemini API key not configured');
   }
 
-  // Detect media type from base64 header or default to jpeg
-  let mediaType = 'image/jpeg';
+  // Clean base64 - remove data URL prefix if present
   let cleanBase64 = imageBase64;
+  let mimeType = 'image/jpeg';
 
   if (imageBase64.startsWith('data:')) {
     const match = imageBase64.match(/^data:(image\/\w+);base64,/);
     if (match) {
-      mediaType = match[1];
+      mimeType = match[1];
       cleanBase64 = imageBase64.replace(/^data:image\/\w+;base64,/, '');
     }
   }
 
-  const response = await fetch('https://api.anthropic.com/v1/messages', {
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${VISION_MODEL}:generateContent?key=${GEMINI_API_KEY}`;
+
+  const response = await fetch(url, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'x-api-key': ANTHROPIC_API_KEY,
-      'anthropic-version': '2023-06-01',
     },
     body: JSON.stringify({
-      model: VISION_MODEL,
-      max_tokens: 1024,
-      messages: [
+      contents: [
         {
-          role: 'user',
-          content: [
+          parts: [
             {
-              type: 'image',
-              source: {
-                type: 'base64',
-                media_type: mediaType,
+              inlineData: {
+                mimeType: mimeType,
                 data: cleanBase64,
               },
             },
             {
-              type: 'text',
               text: ANALYSIS_PROMPT,
             },
           ],
         },
       ],
+      generationConfig: {
+        temperature: 0.3,
+        maxOutputTokens: 1024,
+      },
     }),
   });
 
   if (!response.ok) {
     const errorBody = await response.text();
-    console.error('Anthropic API error:', response.status, errorBody);
+    console.error('Gemini API error:', response.status, errorBody);
     throw new AppError(502, 'AI_API_ERROR', `AI analysis failed: ${response.status}`);
   }
 
   const data = await response.json() as any;
 
-  const textContent = data.content?.find((c: any) => c.type === 'text');
-  if (!textContent?.text) {
+  const textContent = data.candidates?.[0]?.content?.parts?.find((p: any) => p.text)?.text;
+  if (!textContent) {
     throw new AppError(502, 'AI_PARSE_ERROR', 'No text response from AI');
   }
 
   try {
     // Try to parse JSON, handling possible markdown code fences
-    let jsonStr = textContent.text.trim();
+    let jsonStr = textContent.trim();
     jsonStr = jsonStr.replace(/^```json?\s*\n?/, '').replace(/\n?```\s*$/, '');
     const result: AnalysisResult = JSON.parse(jsonStr);
 
@@ -109,7 +107,7 @@ export async function analyzeFood(imageBase64: string): Promise<AnalysisResult> 
 
     return result;
   } catch (e) {
-    console.error('Failed to parse AI response:', textContent.text);
+    console.error('Failed to parse AI response:', textContent);
     throw new AppError(502, 'AI_PARSE_ERROR', 'Failed to parse AI nutrition response');
   }
 }
