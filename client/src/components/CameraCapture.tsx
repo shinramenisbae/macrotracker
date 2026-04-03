@@ -48,11 +48,11 @@ export default function CameraCapture({ onCapture, disabled }: Props) {
         onChange={handleFile}
         className="hidden"
       />
-      {/* Gallery picker (no capture attribute = shows gallery) */}
+      {/* Gallery picker - specific extensions bypass camera prompt on most devices */}
       <input
         ref={galleryRef}
         type="file"
-        accept="image/*"
+        accept=".jpg,.jpeg,.png,.heic,.heif,.webp"
         onChange={handleFile}
         className="hidden"
       />
