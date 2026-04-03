@@ -5,7 +5,7 @@
   "status": "done",
   "currentPhase": "done",
   "createdAt": "2026-04-03T03:53:51Z",
-  "updatedAt": "2026-04-03T04:14:12Z",
+  "updatedAt": "2026-04-03T04:17:30Z",
   "discordChannel": "1469879767544103065",
   "cronJobId": "9aa2dbf4-d8c6-4c24-9285-4ec4f8910b25",
   "phases": {
@@ -57,21 +57,21 @@
     "build": {
       "status": "done",
       "startedAt": "2026-04-03T04:11:17Z",
-      "completedAt": "2026-04-03T04:14:12Z",
+      "completedAt": "2026-04-03T04:14:45Z",
       "workers": [],
       "retries": 0
     },
     "deploy": {
       "status": "done",
-      "startedAt": null,
-      "completedAt": "2026-04-03T04:14:12Z",
+      "startedAt": "2026-04-03T04:14:45Z",
+      "completedAt": "2026-04-03T04:17:30Z",
       "workers": [],
       "retries": 0,
       "deployUrl": "https://76.13.182.206:5012"
     },
     "done": {
       "status": "done",
-      "completedAt": "2026-04-03T04:14:12Z"
+      "completedAt": "2026-04-03T04:17:30Z"
     }
   }
 }
