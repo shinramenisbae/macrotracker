@@ -18,8 +18,9 @@ export default function ScanPage() {
   const [tab, setTab] = useState<Tab>('photo');
   const [analyzing, setAnalyzing] = useState(false);
   const [results, setResults] = useState<FoodItem[]>([]);
+  const [loggedIndices, setLoggedIndices] = useState<Set<number>>(new Set());
   const [error, setError] = useState<string | null>(null);
-  const [logging, setLogging] = useState(false);
+  const [logging, setLogging] = useState<number | null>(null);
   const [editing, setEditing] = useState<FoodItem | null>(null);
   const [manualMode, setManualMode] = useState(showManual);
 
@@ -27,6 +28,7 @@ export default function ScanPage() {
     setAnalyzing(true);
     setError(null);
     setResults([]);
+    setLoggedIndices(new Set());
     try {
       const res = await analyzePhoto(base64);
       setResults(res.items);
@@ -41,6 +43,7 @@ export default function ScanPage() {
     setAnalyzing(true);
     setError(null);
     setResults([]);
+    setLoggedIndices(new Set());
     try {
       const res = await lookupBarcode(code);
       setResults([res.product]);
@@ -52,8 +55,8 @@ export default function ScanPage() {
   }, []);
 
   const handleLog = useCallback(
-    async (item: FoodItem) => {
-      setLogging(true);
+    async (item: FoodItem, index: number) => {
+      setLogging(index);
       try {
         await createEntry({
           name: item.name,
@@ -65,19 +68,21 @@ export default function ScanPage() {
           source: tab === 'barcode' ? 'barcode' : 'ai_photo',
           date: todayStr(),
         });
-        navigate('/');
+        setLoggedIndices((prev) => new Set(prev).add(index));
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to log');
       } finally {
-        setLogging(false);
+        setLogging(null);
       }
     },
-    [navigate, tab]
+    [tab]
   );
+
+  const allLogged = results.length > 0 && loggedIndices.size === results.length;
 
   const handleManualSubmit = useCallback(
     async (item: FoodItem & { meal?: string }) => {
-      setLogging(true);
+      setLogging(-1);
       try {
         await createEntry({
           ...item,
@@ -88,7 +93,7 @@ export default function ScanPage() {
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to log');
       } finally {
-        setLogging(false);
+        setLogging(null);
       }
     },
     [navigate]
@@ -108,7 +113,7 @@ export default function ScanPage() {
             setManualMode(false);
           }}
           submitLabel="Log Food"
-          loading={logging}
+          loading={logging === -1}
         />
         {error && <p className="text-sm text-red-400 mt-3 text-center">{error}</p>}
       </div>
@@ -135,6 +140,7 @@ export default function ScanPage() {
             onClick={() => {
               setTab(t);
               setResults([]);
+              setLoggedIndices(new Set());
               setError(null);
             }}
             className={`flex-1 py-2.5 rounded-lg text-sm font-medium transition-colors ${
@@ -175,8 +181,29 @@ export default function ScanPage() {
           onLog={handleLog}
           onEdit={(item) => setEditing(item)}
           logging={logging}
+          loggedIndices={loggedIndices}
         />
       </div>
+
+      {/* Done button - shows when all items are logged */}
+      {allLogged && (
+        <button
+          onClick={() => navigate('/')}
+          className="w-full mt-4 btn-primary h-14 text-lg font-semibold"
+        >
+          ✅ Done — View Dashboard
+        </button>
+      )}
+
+      {/* Partial logged - show done option */}
+      {loggedIndices.size > 0 && !allLogged && (
+        <button
+          onClick={() => navigate('/')}
+          className="w-full mt-4 btn-secondary h-12 text-sm"
+        >
+          Done ({loggedIndices.size}/{results.length} logged) — View Dashboard
+        </button>
+      )}
     </div>
   );
 }

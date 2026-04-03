@@ -18,8 +18,11 @@ Return ONLY valid JSON (no markdown, no code fences):
     }
   ]
 }
-If multiple distinct foods are visible, list each separately.
-Be as accurate as possible with calorie and macro estimates based on typical serving sizes visible in the photo.`;
+IMPORTANT RULES:
+- ALWAYS list each food component separately. Never combine into one item like "chicken rice bowl".
+- For example, a plate with chicken, rice, and vegetables should be 3 separate items.
+- Include sauces, sides, and garnishes as separate items if they have nutritional value.
+- Be as accurate as possible with calorie and macro estimates based on typical serving sizes visible in the photo.`;
 
 export interface FoodItem {
   name: string;
