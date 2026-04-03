@@ -121,7 +121,7 @@ export default function WeightPage() {
       </div>
 
       {/* Weight chart */}
-      {chartData.length > 1 && (
+      {chartData.length >= 1 && (
         <div className="card mb-4">
           <h3 className="text-sm font-semibold text-dark-muted mb-3">Trend (90 days)</h3>
           <ResponsiveContainer width="100%" height={200}>
