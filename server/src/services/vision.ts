@@ -1,7 +1,7 @@
 import { AppError } from '../middleware/errorHandler';
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
-const VISION_MODEL = 'gemini-2.0-flash';
+const VISION_MODEL = 'gemini-2.5-flash';
 
 const ANALYSIS_PROMPT = `Analyze this food photo. Estimate the nutritional content for the visible portion/serving.
 Return ONLY valid JSON (no markdown, no code fences):
@@ -77,7 +77,7 @@ export async function analyzeFood(imageBase64: string): Promise<AnalysisResult> 
       ],
       generationConfig: {
         temperature: 0.3,
-        maxOutputTokens: 1024,
+        maxOutputTokens: 2048,
       },
     }),
   });
@@ -90,15 +90,31 @@ export async function analyzeFood(imageBase64: string): Promise<AnalysisResult> 
 
   const data = await response.json() as any;
 
-  const textContent = data.candidates?.[0]?.content?.parts?.find((p: any) => p.text)?.text;
+  // Gemini 2.5 may return multiple parts (thinking + text). Concatenate all text parts.
+  const parts = data.candidates?.[0]?.content?.parts || [];
+  const textContent = parts
+    .filter((p: any) => p.text)
+    .map((p: any) => p.text)
+    .join('');
+
   if (!textContent) {
     throw new AppError(502, 'AI_PARSE_ERROR', 'No text response from AI');
   }
 
   try {
-    // Try to parse JSON, handling possible markdown code fences
+    // Extract JSON from response - handle code fences, thinking text, etc.
     let jsonStr = textContent.trim();
-    jsonStr = jsonStr.replace(/^```json?\s*\n?/, '').replace(/\n?```\s*$/, '');
+    // Try to find JSON block in code fences first
+    const fenceMatch = jsonStr.match(/```(?:json)?\s*\n?([\s\S]*?)\n?```/);
+    if (fenceMatch) {
+      jsonStr = fenceMatch[1].trim();
+    } else {
+      // Try to find raw JSON object
+      const jsonMatch = jsonStr.match(/(\{[\s\S]*\})/);
+      if (jsonMatch) {
+        jsonStr = jsonMatch[1];
+      }
+    }
     const result: AnalysisResult = JSON.parse(jsonStr);
 
     if (!result.items || !Array.isArray(result.items)) {
