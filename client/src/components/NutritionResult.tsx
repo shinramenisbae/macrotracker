@@ -3,7 +3,7 @@ import type { FoodItem } from '../types';
 interface Props {
   items: FoodItem[];
   onLog: (item: FoodItem, index: number) => void;
-  onEdit: (item: FoodItem) => void;
+  onEdit: (item: FoodItem, index: number) => void;
   logging?: number | null;
   loggedIndices?: Set<number>;
 }
@@ -87,7 +87,7 @@ export default function NutritionResult({ items, onLog, onEdit, logging, loggedI
               )}
               {!isLogged && (
                 <button
-                  onClick={() => onEdit(item)}
+                  onClick={() => onEdit(item, i)}
                   className="btn-secondary text-sm h-11 px-4"
                 >
                   ✏️

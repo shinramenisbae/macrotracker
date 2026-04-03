@@ -21,7 +21,7 @@ export default function ScanPage() {
   const [loggedIndices, setLoggedIndices] = useState<Set<number>>(new Set());
   const [error, setError] = useState<string | null>(null);
   const [logging, setLogging] = useState<number | null>(null);
-  const [editing, setEditing] = useState<FoodItem | null>(null);
+  const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [manualMode, setManualMode] = useState(showManual);
 
   const handlePhotoCapture = useCallback(async (base64: string) => {
@@ -99,21 +99,63 @@ export default function ScanPage() {
     [navigate]
   );
 
-  if (manualMode || editing) {
+  const handleEditSubmit = useCallback(
+    async (item: FoodItem & { meal?: string }) => {
+      if (editingIndex === null) return;
+      setLogging(editingIndex);
+      try {
+        await createEntry({
+          ...item,
+          source: tab === 'barcode' ? 'barcode' : 'ai_photo',
+          date: todayStr(),
+        });
+        // Update results with edited values
+        setResults((prev) =>
+          prev.map((r, i) => (i === editingIndex ? { ...r, ...item } : r))
+        );
+        setLoggedIndices((prev) => new Set(prev).add(editingIndex));
+        setEditingIndex(null);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to log');
+      } finally {
+        setLogging(null);
+      }
+    },
+    [editingIndex, tab]
+  );
+
+  // Manual entry mode
+  if (manualMode) {
     return (
       <div className="page-container">
         <div className="flex items-center justify-between mb-6">
-          <h1 className="text-xl font-bold">{editing ? 'Edit Food' : 'Add Food'}</h1>
+          <h1 className="text-xl font-bold">Add Food</h1>
         </div>
         <FoodForm
-          initial={editing || undefined}
           onSubmit={handleManualSubmit}
-          onCancel={() => {
-            setEditing(null);
-            setManualMode(false);
-          }}
+          onCancel={() => setManualMode(false)}
           submitLabel="Log Food"
           loading={logging === -1}
+        />
+        {error && <p className="text-sm text-red-400 mt-3 text-center">{error}</p>}
+      </div>
+    );
+  }
+
+  // Edit mode — edit a scanned/photo item before logging
+  if (editingIndex !== null && results[editingIndex]) {
+    const item = results[editingIndex];
+    return (
+      <div className="page-container">
+        <div className="flex items-center justify-between mb-6">
+          <h1 className="text-xl font-bold">Edit Food</h1>
+        </div>
+        <FoodForm
+          initial={item}
+          onSubmit={handleEditSubmit}
+          onCancel={() => setEditingIndex(null)}
+          submitLabel="Log Food"
+          loading={logging === editingIndex}
         />
         {error && <p className="text-sm text-red-400 mt-3 text-center">{error}</p>}
       </div>
@@ -179,13 +221,13 @@ export default function ScanPage() {
         <NutritionResult
           items={results}
           onLog={handleLog}
-          onEdit={(item) => setEditing(item)}
+          onEdit={(_item, index) => setEditingIndex(index)}
           logging={logging}
           loggedIndices={loggedIndices}
         />
       </div>
 
-      {/* Done button - shows when all items are logged */}
+      {/* Done button */}
       {allLogged && (
         <button
           onClick={() => navigate('/')}
@@ -195,7 +237,6 @@ export default function ScanPage() {
         </button>
       )}
 
-      {/* Partial logged - show done option */}
       {loggedIndices.size > 0 && !allLogged && (
         <button
           onClick={() => navigate('/')}
