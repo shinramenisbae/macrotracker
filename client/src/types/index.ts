@@ -31,6 +31,7 @@ export interface Goals {
   protein_g: number;
   carbs_g: number;
   fat_g: number;
+  goal_weight?: number;
 }
 
 export interface DailySummary {

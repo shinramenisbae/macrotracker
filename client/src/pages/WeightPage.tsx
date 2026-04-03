@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts';
 import WeightForm from '../components/WeightForm';
-import { getWeightHistory, logWeight, deleteWeight } from '../lib/api';
+import { getWeightHistory, logWeight, deleteWeight, getGoals, updateGoals } from '../lib/api';
 import type { WeightEntry } from '../types';
 
 export default function WeightPage() {
@@ -23,9 +23,10 @@ export default function WeightPage() {
 
   useEffect(() => {
     load();
-    // Load goal from localStorage
-    const saved = localStorage.getItem('goalWeight');
-    if (saved) setGoalWeight(Number(saved));
+    // Load goal weight from server
+    getGoals().then((res) => {
+      if (res.goals?.goal_weight) setGoalWeight(res.goals.goal_weight);
+    }).catch(() => {});
   }, [load]);
 
   const [viewingPhoto, setViewingPhoto] = useState<string | null>(null);
@@ -51,11 +52,15 @@ export default function WeightPage() {
     }
   };
 
-  const handleGoalSave = () => {
+  const handleGoalSave = async () => {
     const g = Number(goalInput);
     if (g > 0) {
       setGoalWeight(g);
-      localStorage.setItem('goalWeight', String(g));
+      try {
+        await updateGoals({ goal_weight: g });
+      } catch {
+        // fallback
+      }
     }
     setEditingGoal(false);
   };

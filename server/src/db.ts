@@ -80,6 +80,13 @@ export function initializeDatabase(): void {
     console.log('Migrated: added photo_path to weight_log');
   }
 
+  // Migration: add goal_weight to daily_goals if missing
+  const goalCols = db.pragma('table_info(daily_goals)') as any[];
+  if (!goalCols.find((c: any) => c.name === 'goal_weight')) {
+    db.exec('ALTER TABLE daily_goals ADD COLUMN goal_weight REAL');
+    console.log('Migrated: added goal_weight to daily_goals');
+  }
+
   console.log('Database initialized successfully');
 }
 

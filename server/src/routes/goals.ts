@@ -25,6 +25,7 @@ router.put('/', (req: Request, res: Response, next: NextFunction) => {
     if (protein_g !== undefined) { fields.push('protein_g = ?'); values.push(protein_g); }
     if (carbs_g !== undefined) { fields.push('carbs_g = ?'); values.push(carbs_g); }
     if (fat_g !== undefined) { fields.push('fat_g = ?'); values.push(fat_g); }
+    if (req.body.goal_weight !== undefined) { fields.push('goal_weight = ?'); values.push(req.body.goal_weight); }
 
     if (fields.length > 0) {
       fields.push("updated_at = datetime('now')");
