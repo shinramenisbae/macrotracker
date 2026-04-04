@@ -79,8 +79,9 @@ export async function analyzeFood(imageBase64: string): Promise<AnalysisResult> 
         },
       ],
       generationConfig: {
-        temperature: 0.3,
+        temperature: 0.1,
         maxOutputTokens: 2048,
+        responseMimeType: 'application/json',
       },
     }),
   });
@@ -105,28 +106,42 @@ export async function analyzeFood(imageBase64: string): Promise<AnalysisResult> 
   }
 
   try {
-    // Extract JSON from response - handle code fences, thinking text, etc.
     let jsonStr = textContent.trim();
-    // Try to find JSON block in code fences first
-    const fenceMatch = jsonStr.match(/```(?:json)?\s*\n?([\s\S]*?)\n?```/);
-    if (fenceMatch) {
-      jsonStr = fenceMatch[1].trim();
-    } else {
-      // Try to find raw JSON object
-      const jsonMatch = jsonStr.match(/(\{[\s\S]*\})/);
-      if (jsonMatch) {
-        jsonStr = jsonMatch[1];
-      }
-    }
-    const result: AnalysisResult = JSON.parse(jsonStr);
 
-    if (!result.items || !Array.isArray(result.items)) {
+    // Strip ALL code fences (greedy — handles nested or multiple)
+    jsonStr = jsonStr.replace(/```(?:json)?\s*/gi, '').replace(/```/g, '').trim();
+
+    // Try to find a JSON object
+    let parsed: any;
+    const objMatch = jsonStr.match(/(\{[\s\S]*\})/);
+    const arrMatch = jsonStr.match(/(\[[\s\S]*\])/);
+
+    if (objMatch) {
+      parsed = JSON.parse(objMatch[1]);
+    } else if (arrMatch) {
+      // Bare array — wrap it
+      parsed = { items: JSON.parse(arrMatch[1]) };
+    } else {
+      throw new Error('No JSON found in response');
+    }
+
+    // Normalize: if response is an array, wrap it
+    if (Array.isArray(parsed)) {
+      parsed = { items: parsed };
+    }
+
+    // If items key doesn't exist but the object has food-like properties, wrap it
+    if (!parsed.items && parsed.name) {
+      parsed = { items: [parsed] };
+    }
+
+    if (!parsed.items || !Array.isArray(parsed.items)) {
       throw new Error('Invalid response structure');
     }
 
-    return result;
+    return parsed as AnalysisResult;
   } catch (e) {
-    console.error('Failed to parse AI response:', textContent);
+    console.error('Failed to parse AI response:', textContent.substring(0, 500));
     throw new AppError(502, 'AI_PARSE_ERROR', 'Failed to parse AI nutrition response');
   }
 }
