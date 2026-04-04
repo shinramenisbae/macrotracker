@@ -137,24 +137,33 @@ If you cannot identify the product, return: {"name": null}
 Common barcode prefixes: 94 = New Zealand, 93 = Australia. Consider NZ/AU products.`
           }]
         }],
-        generationConfig: { temperature: 0.2, maxOutputTokens: 512 },
+        generationConfig: {
+          temperature: 0.1,
+          maxOutputTokens: 1024,
+          responseMimeType: 'application/json',
+          thinkingConfig: { thinkingBudget: 0 },
+        } as any,
       }),
     });
 
-    if (!response.ok) return null;
+    if (!response.ok) {
+      console.log(`  Gemini barcode API error: ${response.status}`);
+      return null;
+    }
     const data = await response.json() as any;
 
     const parts = data.candidates?.[0]?.content?.parts || [];
     const text = parts.filter((p: any) => p.text).map((p: any) => p.text).join('');
-    if (!text) return null;
+    if (!text) {
+      console.log('  Gemini barcode: no text in response');
+      return null;
+    }
 
     let jsonStr = text.trim();
-    const fenceMatch = jsonStr.match(/```(?:json)?\s*\n?([\s\S]*?)\n?```/);
-    if (fenceMatch) jsonStr = fenceMatch[1].trim();
-    else {
-      const jsonMatch = jsonStr.match(/(\{[\s\S]*\})/);
-      if (jsonMatch) jsonStr = jsonMatch[1];
-    }
+    // Strip code fences if present
+    jsonStr = jsonStr.replace(/```(?:json)?\s*/gi, '').replace(/```/g, '').trim();
+    const objMatch = jsonStr.match(/(\{[\s\S]*\})/);
+    if (objMatch) jsonStr = objMatch[1];
 
     const result = JSON.parse(jsonStr);
     if (!result.name) return null;
@@ -169,7 +178,8 @@ Common barcode prefixes: 94 = New Zealand, 93 = Australia. Consider NZ/AU produc
       serving_size: result.serving_size ?? null,
       source: 'AI Estimate',
     };
-  } catch {
+  } catch (err) {
+    console.log(`  Gemini barcode parse error:`, err instanceof Error ? err.message : err);
     return null;
   }
 }
